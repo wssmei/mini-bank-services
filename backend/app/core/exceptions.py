@@ -1,0 +1,18 @@
+class BankError(Exception):
+    """Erreur métier de base."""
+
+
+class MontantInvalideError(BankError):
+    """Montant nul, négatif ou mal formé."""
+
+
+class FondsInsuffisantsError(BankError):
+    """Solde ou règle de retrait non respectée."""
+
+
+class VirementInvalideError(BankError):
+    """Virement entre deux comptes identiques ou invalides."""
+
+
+class CompteIntrouvableError(BankError):
+    """Aucun compte ne correspond à l'identifiant donné."""

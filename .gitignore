@@ -221,3 +221,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# BankServices local configuration
+.env.*
+!.env.example
+
+# Python
+.python-version
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
