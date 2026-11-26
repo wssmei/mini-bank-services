@@ -60,7 +60,8 @@ def verifierMontant(valeur) -> Decimal:
     if not deux_decimales:
         raise MontantInvalideError("Le montant ne peut pas avoir plus de deux décimales.")
 
-    return montant
+    # Normalisation : "12000" devient 12000.00, comme dans la base (Numeric(14, 2)).
+    return montant.quantize(CENT)
 
 
 # ---------------------------------------------------------------------------

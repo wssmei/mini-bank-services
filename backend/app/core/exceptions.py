@@ -16,3 +16,11 @@ class VirementInvalideError(BankError):
 
 class CompteIntrouvableError(BankError):
     """Aucun compte ne correspond à l'identifiant donné."""
+
+
+class ClientIntrouvableError(BankError):
+    """Aucun client ne correspond à l'identifiant donné."""
+
+
+class NumeroCompteDejaUtiliseError(BankError):
+    """Le numéro de compte demandé existe déjà."""
