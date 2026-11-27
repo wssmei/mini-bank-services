@@ -82,8 +82,8 @@ def test_retrait_refuse_ne_modifie_ni_solde_ni_historique(session):
 
 def test_retrait_courant_utilise_le_decouvert(session):
     compte = nouveau_compte(session, cls=CompteCourant, solde="1000.00")
-    effectuerRetrait(compte, "21000")  # 1000 - 21000 = -20000 : limite exacte
-    assert compte.solde == Decimal("-20000.00")
+    effectuerRetrait(compte, "6000")  # 1000 - 6000 = -5000 : limite exacte
+    assert compte.solde == Decimal("-5000.00")
     with pytest.raises(FondsInsuffisantsError):
         effectuerRetrait(compte, "0.01")
 

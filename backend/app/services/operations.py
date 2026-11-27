@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import (
     CompteIntrouvableError,
+    FondsInsuffisantsError,
     MontantInvalideError,
     VirementInvalideError,
 )
@@ -21,6 +22,11 @@ from app.models.domain import CompteBancaire, Transaction, TypeOperation
 
 CENT = Decimal("0.01")
 MONTANT_MAX = Decimal("999999999999.99")  # Limite de Numeric(14, 2)
+
+MESSAGE_VIREMENT_REFUSE = (
+    "Virement refusé : le compte source ne dispose pas de fonds suffisants "
+    "pour ce montant (solde insuffisant ou règle du compte)."
+)
 
 OPERATIONS_CREDITRICES = (TypeOperation.DEPOT, TypeOperation.VIREMENT_CREDIT)
 OPERATIONS_DEBITRICES = (TypeOperation.RETRAIT, TypeOperation.VIREMENT_DEBIT)
@@ -168,7 +174,11 @@ def effectuerVirement(
     source = verrous[source_id]
     destination = verrous[destination_id]
 
-    source.retirer(montant)       # Peut lever FondsInsuffisantsError
+    try:
+        source.retirer(montant)   # Même règle que pour un retrait : elle n'est pas modifiée
+    except FondsInsuffisantsError as erreur:
+        # Seul le message change : il nomme le virement au lieu du retrait.
+        raise FondsInsuffisantsError(MESSAGE_VIREMENT_REFUSE) from erreur
     destination.deposer(montant)
 
     debit = creerTransaction(source, TypeOperation.VIREMENT_DEBIT, montant)

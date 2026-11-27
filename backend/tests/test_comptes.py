@@ -32,7 +32,7 @@ def make_client(session):
     return client
 
 
-# --- Règle de retrait : compte courant (découvert autorisé jusqu'à 20 000) ---
+# --- Règle de retrait : compte courant (découvert autorisé jusqu'à 5 000) ---
 
 def test_courant_retrait_dans_le_solde(session):
     c = CompteCourant(numero="C1", solde=Decimal("1000.00"), client=make_client(session))
@@ -42,14 +42,14 @@ def test_courant_retrait_dans_le_solde(session):
 
 def test_courant_decouvert_jusqua_la_limite_accepte(session):
     c = CompteCourant(numero="C2", solde=Decimal("1000.00"), client=make_client(session))
-    c.retirer(Decimal("21000.00"))  # 1000 - 21000 = -20000 : limite exacte
-    assert c.solde == Decimal("-20000.00")
+    c.retirer(Decimal("6000.00"))  # 1000 - 6000 = -5000 : limite exacte
+    assert c.solde == Decimal("-5000.00")
 
 
 def test_courant_au_dela_du_decouvert_refuse_sans_modifier_le_solde(session):
     c = CompteCourant(numero="C3", solde=Decimal("1000.00"), client=make_client(session))
     with pytest.raises(FondsInsuffisantsError):
-        c.retirer(Decimal("21000.01"))
+        c.retirer(Decimal("6000.01"))
     assert c.solde == Decimal("1000.00")
 
 

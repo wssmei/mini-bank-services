@@ -10,7 +10,6 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -49,7 +48,6 @@ coverage.xml
 *.py.cover
 *.lcov
 .hypothesis/
-.pytest_cache/
 cover/
 
 # Translations
@@ -152,7 +150,7 @@ activemq-data/
 # Environments
 .env
 .envrc
-.venv
+.venv/
 env/
 venv/
 ENV/
@@ -229,9 +227,15 @@ __marimo__/
 # Python
 .python-version
 
-# IDE
+# Python testing and caches
+.pytest_cache/
+
+# Frontend
+node_modules/
+dist/
+
+# IDE and OS
 .idea/
 .vscode/
-
-# Logs
-*.log
+.DS_Store
+Thumbs.db

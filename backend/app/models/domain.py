@@ -62,7 +62,7 @@ class CompteBancaire(Base):
 class CompteCourant(CompteBancaire):
     __mapper_args__ = {"polymorphic_identity": "COURANT"}
 
-    DECOUVERT_MAX = Decimal("20000.00")  # Hypothèse pédagogique
+    DECOUVERT_MAX = Decimal("5000.00")  # Hypothèse pédagogique
 
     def peut_retirer(self, montant: Decimal) -> bool:
         return self.solde - montant >= -self.DECOUVERT_MAX

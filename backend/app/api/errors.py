@@ -13,6 +13,7 @@ from app.core.exceptions import (
     NumeroCompteDejaUtiliseError,
     FondsInsuffisantsError,
     MontantInvalideError,
+    PeriodeInvalideError,
     VirementInvalideError,
 )
 
@@ -23,6 +24,7 @@ STATUT_PAR_ERREUR: tuple[tuple[type[BankError], int], ...] = (
     (FondsInsuffisantsError, 422),
     (MontantInvalideError, 400),
     (VirementInvalideError, 400),
+    (PeriodeInvalideError, 400),
 )
 STATUT_PAR_DEFAUT = 400
 

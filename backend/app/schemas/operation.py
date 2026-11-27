@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -40,6 +40,20 @@ class TransactionRead(SchemaBase):
     montant: Decimal
     solde_apres: Decimal
     date_operation: datetime
+
+    @field_validator("date_operation", mode="after")
+    @classmethod
+    def en_utc(cls, valeur: datetime) -> datetime:
+        """Renvoie toujours l'instant en UTC, quel que soit le fuseau du serveur de base.
+
+        PostgreSQL renvoie les dates dans le fuseau de sa session (ici Africa/Algiers),
+        alors qu'une ligne fraîchement créée est en UTC. Sans cette normalisation,
+        le même instant apparaîtrait avec deux écritures différentes selon l'endpoint.
+        Une date sans fuseau (SQLite) est, par convention de la base, en UTC.
+        """
+        if valeur.tzinfo is None:
+            return valeur.replace(tzinfo=timezone.utc)
+        return valeur.astimezone(timezone.utc)
 
 
 class VirementRead(SchemaBase):

@@ -24,3 +24,7 @@ class ClientIntrouvableError(BankError):
 
 class NumeroCompteDejaUtiliseError(BankError):
     """Le numéro de compte demandé existe déjà."""
+
+
+class PeriodeInvalideError(BankError):
+    """Période d'historique incohérente (date de début après date de fin)."""

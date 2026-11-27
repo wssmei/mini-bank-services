@@ -1,3 +1,4 @@
+import pytest
 from sqlalchemy import func, select
 
 from app.models.domain import Transaction
@@ -90,9 +91,16 @@ def test_retrait_sans_fonds_renvoie_422_et_ne_change_rien(api, fabrique_session)
 
 def test_courant_utilise_le_decouvert(api):
     compte = creer_compte(api, creer_client(api), "COURANT")
-    reponse = api.post(f"{COMPTES}/{compte}/retraits", json={"montant": "20000"})
+    reponse = api.post(f"{COMPTES}/{compte}/retraits", json={"montant": "5000"})
     assert reponse.status_code == 201
-    assert solde(api, compte) == "-20000.00"
+    assert solde(api, compte) == "-5000.00"
+
+
+def test_courant_au_dela_du_decouvert_renvoie_422(api):
+    compte = creer_compte(api, creer_client(api), "COURANT")
+    reponse = api.post(f"{COMPTES}/{compte}/retraits", json={"montant": "5000.01"})
+    assert reponse.status_code == 422
+    assert solde(api, compte) == "0.00"
 
 
 def test_retrait_compte_inconnu_renvoie_404(api):
@@ -131,6 +139,40 @@ def test_virement_sans_fonds_ne_modifie_rien(api, fabrique_session):
     assert solde(api, source) == "1000.00"
     assert solde(api, destination) == "0.00"
     assert nombre_transactions(fabrique_session) == avant
+
+
+# Régression : le refus d'un virement doit nommer le virement, pas le retrait.
+# Les deux motifs sont couverts : solde insuffisant (épargne) et découvert dépassé (courant).
+@pytest.mark.parametrize(
+    "type_source, montant",
+    [("EPARGNE", "1500"), ("COURANT", "6001")],
+)
+def test_virement_refuse_donne_un_message_explicite(api, fabrique_session, type_source, montant):
+    client = creer_client(api)
+    source = creer_compte(api, client, type_source)
+    destination = creer_compte(api, client, "COURANT")
+    api.post(f"{COMPTES}/{source}/depots", json={"montant": "1000"})
+    avant = nombre_transactions(fabrique_session)
+
+    reponse = api.post(VIREMENTS, json={"source_id": source, "destination_id": destination, "montant": montant})
+
+    assert reponse.status_code == 422
+    detail = reponse.json()["detail"]
+    assert detail.startswith("Virement refusé")
+    assert "solde insuffisant ou règle du compte" in detail
+    assert "Retrait" not in detail
+    assert solde(api, source) == "1000.00"
+    assert solde(api, destination) == "0.00"
+    assert nombre_transactions(fabrique_session) == avant
+
+
+def test_retrait_refuse_garde_son_message_d_origine(api):
+    """Le message du retrait seul ne doit pas changer avec la correction du virement."""
+    compte = creer_compte(api, creer_client(api), "EPARGNE")
+    api.post(f"{COMPTES}/{compte}/depots", json={"montant": "1000"})
+    reponse = api.post(f"{COMPTES}/{compte}/retraits", json={"montant": "1500"})
+    assert reponse.status_code == 422
+    assert reponse.json()["detail"] == "Retrait refusé par la règle du compte."
 
 
 def test_virement_vers_le_meme_compte_renvoie_400(api):
